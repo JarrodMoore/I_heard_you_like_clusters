@@ -1,0 +1,8 @@
+network archetecture
+	simple echo server
+	simple data transfer
+	advanced features
+		self discovery
+clustering
+	file to numpy
+	numpy to scikit-learn
