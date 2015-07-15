@@ -1,22 +1,25 @@
 from twisted.internet.protocol import Factory
+from twisted.internet.protocol import Protocol
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
 
-class ClusterProtocol(LineReceiver):
+class ClusterProtocol(Protocol):
     def __init__(self, data):
         self.data = data
-        self.state = None
+        self.state = 0
     def connectionMade(self):
-        self.sendLine("YA I WORK")
+        self.transport.write(str(self.data))
+        self.state += 1
     def connectionLost(self, reason):
         pass
-    def lineReveived(self, line):
+    def dataReceived(self, data):
         pass
 
 class ClusterFactory(Factory):
     def __init__(self):
-        pass
+        self.connectionNumber = -1
     def buildProtocol(self, addr):
-        return ClusterProtocol(None)
+        self.connectionNumber += 1
+        return ClusterProtocol(self.connectionNumber)
 reactor.listenTCP(9000, ClusterFactory())
 reactor.run()
