@@ -8,18 +8,45 @@ An example client. Run simpleserv.py first before running this.
 
 from twisted.internet import reactor, protocol
 import pickle
-
+import numpy as np
+from sklearn.cluster import KMeans
+import StringIO
 # a client protocol
 
 class EchoClient(protocol.Protocol):
     
     def connectionMade(self):
+        self.STATE = "GET K"
+        self.holdData = ''
         print "Hello, World!"
     
     def dataReceived(self, data):
-        data = data.split(',')
-        print type(data), data
-        self.transport.loseConnection()
+        if self.STATE == "GET K":
+            self.clusterWorker = KMeans(n_clusters = int(data))
+            self.transport.write('Recieved K')
+            self.STATE = "CLUSTER"
+        elif self.STATE == "CLUSTER":
+            data = data.replace(' ', '')
+            data = data.replace('\n,', '\n')
+            
+            data_stream = StringIO.StringIO(data)
+            M = np.genfromtxt(data_stream, delimiter=',')
+            if not np.all(np.isfinite(M)):
+                self.transport.writ("NON FINITE DATA SENT")
+                self.transport.loseConnection()
+            else:
+                self.clusterWorker.fit(M)
+                centers_np = self.clusterWorker.cluster_centers_
+                centers_string = ''
+                print len(centers_np[0])
+                for cent in centers_np:
+                    for c in cent:
+                        centers_string += str(c) +','
+                        print "CURRENT CENTER STRING :", centers_string
+                    centers_string =  centers_string[:-1] + '\n'
+                print "SENT: ", centers_string
+                self.transport.write(centers_string)
+        
     
     def connectionLost(self, reason):
         print "connection lost"
