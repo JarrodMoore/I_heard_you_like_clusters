@@ -8,7 +8,7 @@ import sys
 
 GLOBAL_FILE_IN = open("house-votes-84.data")
 GLOBAL_CLUSTER_ITER = 0
-GLOBAL_ITER_LIMIT = 10
+GLOBAL_ITER_LIMIT = 1000
 GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_CLUSTER_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
@@ -69,7 +69,7 @@ class ClusterProtocol(Protocol):
                 GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber]  = None
                 if GLOBAL_ITER_LIMIT -1 in GLOBAL_CLUSTER_ITER_NUMBER: #DATA IN FINAL ITER STILL BEING PROCESSED
                     print "IF 0-0-0"
-                    self.loseConnection()
+                    self.transport.loseConnection()
                 else: #ALL DATA IN FINAL ITER PROCESSED
                     print "IF 0-0-1"
                     if isinstance(currentIterNumberTemp, basestring): #FINAL CENTERS CLUSTERED
