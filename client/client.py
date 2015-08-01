@@ -38,13 +38,13 @@ class EchoClient(protocol.Protocol):
                 self.clusterWorker.fit(M)
                 centers_np = self.clusterWorker.cluster_centers_
                 centers_string = ''
-                print len(centers_np[0])
+#                print len(centers_np[0])
                 for cent in centers_np:
                     for c in cent:
                         centers_string += str(c) +','
-                        print "CURRENT CENTER STRING :", centers_string
+#                        print "CURRENT CENTER STRING :", centers_string
                     centers_string =  centers_string[:-1] + '\n'
-                print "SENT: ", centers_string
+#                print "SENT: ", centers_string
                 self.transport.write(centers_string)
         
     
