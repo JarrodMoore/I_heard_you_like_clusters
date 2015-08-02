@@ -141,6 +141,18 @@ class ClusterFactory(Factory):
         self.connectionNumber += 1
         return ClusterProtocol(self.connectionNumber)
 
+def checkArgs():
+    '''Check to make sure all arguments are provided in command line
+    arg1: port, 
+    arg2: infile, 
+    arg3: oufile, 
+    arg4: num centers, 
+    arg5: chunk size
+    '''
+    if len(sys.argv) < 6:
+        print "Not enough arguments were provided. Please try again with correct format:"
+        print "server.py port infile outfile numCenter chunkSize"
+
 if __name__ == "__main__":
 #    GLOBAL_FILE_IN = open("house-votes-84.data")
 #    GLOBAL_CLUSTER_ITER = 0
@@ -148,6 +160,7 @@ if __name__ == "__main__":
 #    GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 #    GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 #    GLOBAL_CLIENT_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
+    checkArgs()
     reactor.listenTCP(9000, ClusterFactory())
     reactor.run()
     for center in GLOBAL_FINAL_CENTERS:
@@ -156,3 +169,4 @@ if __name__ == "__main__":
 #        print len(cent)
 #        if len(cent) != 4211:
 #            print index, GLOBAL_FINAL_CENTERS[index]
+
