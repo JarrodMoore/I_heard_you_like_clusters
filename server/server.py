@@ -6,14 +6,14 @@ import os
 import numpy as np
 import sys
 
-GLOBAL_FILE_IN = open("house-votes-84.data")
+GLOBAL_FILE_IN = open(sys.argv[1])
 GLOBAL_CLUSTER_ITER = 0
 GLOBAL_ITER_LIMIT = 100
 GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_CLUSTER_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
 
-def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=50):
+def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=100):
     data = ''
     for line_number in range(chunk_size):
         data += f.readline()
@@ -21,7 +21,7 @@ def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=50):
     f.seek(0, os.SEEK_END)
     size = f.tell() - old_file_position
     f.seek(old_file_position, os.SEEK_SET)
-    if size < 1024:
+    if size < 2048:
         data += f.read()
     return data
 
@@ -30,7 +30,7 @@ class ClusterProtocol(Protocol):
         self.connectionNumber = data
     def connectionMade(self):
         print "CONNECTION MADE"
-        self.transport.write(sys.argv[1])
+        self.transport.write(sys.argv[2])
     def connectionLost(self, reason):
         pass
     def dataReceived(self, data):

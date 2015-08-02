@@ -11,6 +11,7 @@ import pickle
 import numpy as np
 from sklearn.cluster import KMeans
 import StringIO
+import time
 # a client protocol
 
 class EchoClient(protocol.Protocol):
@@ -66,9 +67,11 @@ class EchoFactory(protocol.ClientFactory):
 # this connects the protocol to a server running on port 8000
 def main():
     f = EchoFactory()
-    reactor.connectTCP("localhost", 9000, f)
-    reactor.run()
-
+    try:
+        reactor.connectTCP("localhost", 9000, f)
+        reactor.run()
+    except:    
+        time.sleep(1)
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
     main()
