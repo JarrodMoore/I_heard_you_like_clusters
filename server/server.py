@@ -6,14 +6,14 @@ import os
 import numpy as np
 import sys
 
-GLOBAL_FILE_IN = open(sys.argv[1])
+GLOBAL_FILE_IN = open(sys.argv[2])
 GLOBAL_CLUSTER_ITER = 0
 GLOBAL_ITER_LIMIT = 100
 GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_CLUSTER_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
 
-def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=100):
+def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=int(sys.argv[5])):
     data = ''
     for line_number in range(chunk_size):
         data += f.readline()
@@ -21,16 +21,40 @@ def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=100):
     f.seek(0, os.SEEK_END)
     size = f.tell() - old_file_position
     f.seek(old_file_position, os.SEEK_SET)
-    if size < 2048:
+    if size < (chunk_size*1024/50):
+ #       print size
         data += f.read()
     return data
+
+def check_less_in(n, I):
+    for i in range(n):
+        if i in I:
+            return True
+    return False
+
+def check_for_none(n, I):
+    for index in range(n):
+       if I[index] == None:
+           return True
+    return False
+
+def find_none(n, I):
+    return_array = []
+    for index in range(n):
+       if I[index] == None:
+           return_array.append(index)
+    return return_array
+
+def check_for_final(s, A):
+    if s in A:
+        return True
+    return False
 
 class ClusterProtocol(Protocol):
     def __init__(self, data):
         self.connectionNumber = data
     def connectionMade(self):
-        print "CONNECTION MADE"
-        self.transport.write(sys.argv[2])
+        self.transport.write(sys.argv[4])
     def connectionLost(self, reason):
         pass
     def dataReceived(self, data):
@@ -40,7 +64,6 @@ class ClusterProtocol(Protocol):
         global GLOBAL_CENTERS
         global GLOBAL_FINAL_CENTERS
         global GLOBAL_CLUSTER_ITER_NUMBER
-        print GLOBAL_CLUSTER_ITER
         if GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] == None:
             GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
             self.clusterWorkSend()
@@ -69,35 +92,23 @@ class ClusterProtocol(Protocol):
         if data == '': #ALL DATA FOR ITER SENT
 #            print "IF 0"
             if GLOBAL_CLUSTER_ITER == GLOBAL_ITER_LIMIT-1: #ALL ITERATIONS STARTED
-#                print "IF 0-0"
-                if GLOBAL_ITER_LIMIT -1 in GLOBAL_CLUSTER_ITER_NUMBER: #DATA IN FINAL ITER STILL BEING PROCESSED
-#                    print "IF 0-0-0"
-#                    done = True
-#                    for cents, index in zip(GLOBAL_FINAL_CENTERS, range(len(GLOBAL_FINAL_CENTERS))):
-#                        if cents == None:
-#                            done = False
-#                            GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(index) + 'F'
-#                            self.transport.write(GLOBAL_CENTERS[index])
-#                    if done:
-                    print "CONNECTION # " , self.connectionNumber, " lost"
-                    self.transport.loseConnection()
-                else: #ALL DATA IN FINAL ITER PROCESSED
-#                    print "IF 0-0-1"
-                    if isinstance(currentIterNumberTemp, basestring): #FINAL CENTERS CLUSTERED
-#                        print "IF 0-0-1-0"
-                        done = True
-#                        for cents, index in zip(GLOBAL_FINAL_CENTERS, range(len(GLOBAL_FINAL_CENTERS))):
-#                            if cents == None:
-#                                done = False
-#                                GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(index) + 'F'
-#                                self.transport.write(GLOBAL_CENTERS[index])
-                        if done:
-                            print "REACTOR STOPPED"
-                            reactor.stop()
-                    else: #CLUSTER FINAL CENTERS
-#                        print "IF 0-0-1-1"
-                        GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(currentIterNumberTemp) + 'F'
-                        self.transport.write(GLOBAL_CENTERS[GLOBAL_ITER_LIMIT-1])
+#               print "IF 0-0"
+                for cents, index in zip(GLOBAL_FINAL_CENTERS, range(len(GLOBAL_FINAL_CENTERS))):
+                    if (cents == None) and (str(index) + 'F' not in GLOBAL_CLUSTER_ITER_NUMBER):
+                        GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(index) + 'F'
+                        self.transport.write(GLOBAL_CENTERS[index])
+                        break
+                else:
+                    for i in range(len(GLOBAL_CLUSTER_ITER_NUMBER)):
+                        GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = None
+                        if GLOBAL_CLUSTER_ITER_NUMBER[i] != None:
+                            self.transport.loseConnection()
+                            break
+                for cent in GLOBAL_FINAL_CENTERS:
+                     if cent == None:
+                         break
+                else:
+                    reactor.stop()
             else: #MORE ITERS TO DO
 #                print "IF 0-1"
                 if currentIterNumberTemp in GLOBAL_CLUSTER_ITER_NUMBER: #DATA IN CURRENT ITER STILL BEING PROCESSED
@@ -121,16 +132,33 @@ class ClusterProtocol(Protocol):
                         self.transport.write(data)
                     else:
 #                        print "IF 0-1-1-1"
-                        print "CLUSTERING FINAL CENTERS"
                         GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(currentIterNumberTemp) + 'F'
                         data = GLOBAL_CENTERS[currentIterNumberTemp]
                         self.transport.write(data)
         else: #PROCESS DATA IN CURRENT ITER
 #           print "IF 1"
-            if (GLOBAL_CLUSTER_ITER -1 not in GLOBAL_CLUSTER_ITER_NUMBER) and (GLOBAL_FINAL_CENTERS[GLOBAL_CLUSTER_ITER -1] == None) and (GLOBAL_CLUSTER_ITER != 0) and not (isinstance(currentIterNumberTemp, basestring)): #FINAL CENTERS CLUSTERED
-                GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(currentIterNumberTemp) + 'F'
-                data = GLOBAL_CENTERS[currentIterNumberTemp]
-                self.transport.write(data)
+            if not (check_less_in(GLOBAL_CLUSTER_ITER -1, GLOBAL_CLUSTER_ITER_NUMBER)):
+#                print '(check_less_in(GLOBAL_CLUSTER_ITER -1, GLOBAL_CLUSTER_ITER_NUMBER)) == FALSE'
+                if check_for_none(GLOBAL_CLUSTER_ITER - 1, GLOBAL_FINAL_CENTERS):
+#                    print 'check_for_none(GLOBAL_CLUSTER_ITER -1, GLOBAL_FINAL_CENTERS) == TRUE'
+                    if (GLOBAL_CLUSTER_ITER != 0): #FINAL CENTERS CLUSTERED
+#                        print "(GLOBAL_CLUSTER_ITER != 0) == TRUE"
+                        index = find_none(GLOBAL_CLUSTER_ITER-1, GLOBAL_FINAL_CENTERS)
+                        for i in index:
+                            if not str(i) + 'F' in GLOBAL_CLUSTER_ITER_NUMBER:
+                                GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = str(i) + 'F'
+                                data = GLOBAL_CENTERS[i]
+                                self.transport.write(data)
+                                break
+                        else:
+                            GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
+                            self.transport.write(data)
+                    else:
+                        GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
+                        self.transport.write(data)
+                else:
+                    GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
+                    self.transport.write(data)
             else:
                 GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
                 self.transport.write(data)
@@ -148,11 +176,12 @@ if __name__ == "__main__":
 #    GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 #    GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 #    GLOBAL_CLIENT_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
-    reactor.listenTCP(9000, ClusterFactory())
+    reactor.listenTCP(int(sys.argv[1]), ClusterFactory())
     reactor.run()
-    for center in GLOBAL_FINAL_CENTERS:
-        print center
-#    for cent, index in zip(GLOBAL_CENTERS, range(len(GLOBAL_CENTERS))):
-#        print len(cent)
+    f = open(sys.argv[3], 'w')
+    for center, index in zip(GLOBAL_FINAL_CENTERS, range(len(GLOBAL_FINAL_CENTERS))):
+        if center != None:
+            f.write(center)
+            f.write('\n')
 #        if len(cent) != 4211:
 #            print index, GLOBAL_FINAL_CENTERS[index]

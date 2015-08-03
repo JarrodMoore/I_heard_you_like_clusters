@@ -19,7 +19,7 @@ class EchoClient(protocol.Protocol):
     def connectionMade(self):
         self.STATE = "GET K"
         self.holdData = ''
-        print "Hello, World!"
+        print "Yo, I hear you like to cluster"
     
     def dataReceived(self, data):
         if self.STATE == "GET K":
@@ -50,17 +50,17 @@ class EchoClient(protocol.Protocol):
         
     
     def connectionLost(self, reason):
-        print "connection lost"
+        pass
 
 class EchoFactory(protocol.ClientFactory):
     protocol = EchoClient
 
     def clientConnectionFailed(self, connector, reason):
-        print "Connection failed - goodbye!"
+        print "So I clustered on a cluster"
         reactor.stop()
     
     def clientConnectionLost(self, connector, reason):
-        print "Connection lost - goodbye!"
+        print "So I clustered on a cluster"
         reactor.stop()
 
 
