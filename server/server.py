@@ -191,11 +191,11 @@ if __name__ == "__main__":
     reactor.listenTCP(int(sys.argv[1]), ClusterFactory())
     checkArgs()
     reactor.run()
-    f = open(sys.argv[3], 'w')
+    f_in = open(sys.argv[3], 'w')
     for center, index in zip(GLOBAL_FINAL_CENTERS, range(len(GLOBAL_FINAL_CENTERS))):
         if center != None:
-            f.write(center)
-            f.write('\n')
+            f_in.write(center)
+            f_in.write('\n')
 #        if len(cent) != 4211:
 #            print index, GLOBAL_FINAL_CENTERS[index]
 
