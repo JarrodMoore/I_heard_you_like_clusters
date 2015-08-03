@@ -12,6 +12,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import StringIO
 import time
+import sys
 # a client protocol
 
 class EchoClient(protocol.Protocol):
@@ -68,7 +69,7 @@ class EchoFactory(protocol.ClientFactory):
 def main():
     f = EchoFactory()
     try:
-        reactor.connectTCP("localhost", 9000, f)
+        reactor.connectTCP("localhost", int(sys.argv[1]), f)
         reactor.run()
     except:    
         time.sleep(1)

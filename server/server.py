@@ -22,7 +22,7 @@ def checkArgs():
 checkArgs()
 GLOBAL_FILE_IN = open(sys.argv[2])
 GLOBAL_CLUSTER_ITER = 0
-GLOBAL_ITER_LIMIT = 100
+GLOBAL_ITER_LIMIT = int(sys.argv[6])
 GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_CLUSTER_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
@@ -78,6 +78,7 @@ class ClusterProtocol(Protocol):
         global GLOBAL_CENTERS
         global GLOBAL_FINAL_CENTERS
         global GLOBAL_CLUSTER_ITER_NUMBER
+#        print 'recieved ', GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber]
         if GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] == None:
             GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
             self.clusterWorkSend()
@@ -99,7 +100,6 @@ class ClusterProtocol(Protocol):
         global GLOBAL_CENTERS
         global GLOBAL_FINAL_CENTERS
         global GLOBAL_CLUSTER_ITER_NUMBER
-
         data = read_in_chunks()
         currentIterNumberTemp = GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber]
         GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber]  = None
@@ -176,6 +176,7 @@ class ClusterProtocol(Protocol):
             else:
                 GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber] = GLOBAL_CLUSTER_ITER
                 self.transport.write(data)
+#        print 'sent ', GLOBAL_CLUSTER_ITER_NUMBER[self.connectionNumber]
 class ClusterFactory(Factory):
     def __init__(self):
         self.connectionNumber = -1
