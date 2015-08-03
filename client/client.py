@@ -19,7 +19,7 @@ class EchoClient(protocol.Protocol):
     def connectionMade(self):
         self.STATE = "GET K"
         self.holdData = ''
-        print "Yo, I hear you like to cluster"
+        print "Yo, I heard you like to cluster"
     
     def dataReceived(self, data):
         if self.STATE == "GET K":
