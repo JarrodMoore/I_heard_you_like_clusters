@@ -13,6 +13,7 @@ def checkArgs():
     arg3: oufile, 
     arg4: num centers, 
     arg5: chunk size
+    arg6: iter numbers
     '''
     if len(sys.argv) < 6:
         print "Not enough arguments were provided. Please try again with correct format:"
