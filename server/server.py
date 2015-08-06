@@ -24,10 +24,8 @@ try:
     GLOBAL_FILE_IN = open(sys.argv[2])
 except:
     print str(sys.argv[2]) + " was unable to be opended."
-try:
-    GLOBAL_ITER_LIMIT = int(sys.argv[6])
-except:
-    print"Unable to convert" + str(sys.argv[6] + " to an int.")
+    exit(0)
+GLOBAL_ITER_LIMIT = int(sys.argv[6])
 GLOBAL_CLUSTER_ITER = 0
 GLOBAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
