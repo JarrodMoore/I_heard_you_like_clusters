@@ -32,6 +32,10 @@ GLOBAL_FINAL_CENTERS = GLOBAL_ITER_LIMIT*[None]
 GLOBAL_CLUSTER_ITER_NUMBER = GLOBAL_ITER_LIMIT*[None]
 
 def read_in_chunks(f=GLOBAL_FILE_IN, chunk_size=int(sys.argv[5])):
+    '''This reads the data file in chunks, specified from command line.
+    If the size of the last chunk is too small it is joined with 
+    the second to last chunk.
+    '''
     data = ''
     for line_number in range(chunk_size):
         data += f.readline()
